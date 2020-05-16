@@ -1,4 +1,5 @@
 #pragma once
+
 namespace EPrimalEquipmentType
 {
 	enum Type
@@ -12,7 +13,9 @@ namespace EPrimalEquipmentType
 		Trophy = 0x6,
 		Costume = 0x7,
 		Shield = 0x8,
-		MAX = 0x9,
+		Weapon = 0x9,
+		Snapshot = 0xA,
+		MAX = 0xB,
 	};
 }
 
@@ -95,11 +98,11 @@ namespace EPrimalConsumableType
 {
 	enum Type
 	{
-		Food,
-		Water,
-		Medicine,
-		Other,
-		MAX
+		Food = 0x0,
+		Water = 0x1,
+		Medicine = 0x2,
+		Other = 0x3,
+		MAX = 0x4,
 	};
 }
 
@@ -107,9 +110,9 @@ namespace EPrimalItemMessage
 {
 	enum Type
 	{
-		Broken,
-		Repaired,
-		MAX
+		Broken = 0x0,
+		Repaired = 0x1,
+		MAX = 0x2,
 	};
 }
 
@@ -122,7 +125,8 @@ namespace EXPType
 		XP_HARVEST = 0x2,
 		XP_CRAFT = 0x3,
 		XP_SPECIAL = 0x4,
-		MAX = 0x5,
+		XP_ALPHAKILL = 0x5,
+		MAX = 0x6,
 	};
 }
 
@@ -130,10 +134,10 @@ namespace EBabyCuddleType
 {
 	enum Type
 	{
-		Pet,
-		Food,
-		Walk,
-		MAX
+		PET = 0x0,
+		FOOD = 0x1,
+		WALK = 0x2,
+		MAX = 0x3,
 	};
 }
 
@@ -141,9 +145,9 @@ namespace EAttachLocation
 {
 	enum Type
 	{
-		KeepRelativeOffset,
-		KeepWorldPosition,
-		SnapToTarget
+		KeepRelativeOffset = 0x0,
+		KeepWorldPosition = 0x1,
+		SnapToTarget = 0x2,
 	};
 }
 
@@ -152,11 +156,11 @@ namespace EEndPlayReason
 {
 	enum Type
 	{
-		ActorDestroyed,
-		LevelTransition,
-		EndPlayInEditor,
-		RemovedFromWorld,
-		Quit
+		ActorDestroyed = 0x0,
+		LevelTransition = 0x1,
+		EndPlayInEditor = 0x2,
+		RemovedFromWorld = 0x3,
+		Quit = 0x4
 	};
 }
 
@@ -164,10 +168,10 @@ namespace EPrimalARKTributeDataType
 {
 	enum Type
 	{
-		Items,
-		TamedDinos,
-		CharacterData,
-		MAX
+		Items = 0x0,
+		TamedDinos = 0x1,
+		CharacterData = 0x2,
+		MAX = 0x3,
 	};
 }
 
@@ -175,11 +179,11 @@ namespace ESTOFNotificationType
 {
 	enum Type
 	{
-		Death,
-		TribeEliminated,
-		MatchVictory,
-		MatchDraw,
-		MAX
+		Death = 0x0,
+		TribeEliminated = 0x1,
+		MatchVictory = 0x2,
+		MatchDraw = 0x3,
+		MAX = 0x4,
 	};
 }
 
@@ -196,7 +200,8 @@ namespace EDinoTamedOrder
 		StopFollowing = 0x6,
 		CycleFollowDistance = 0x7,
 		SetAggressionPassiveFlee = 0x8,
-		MAX = 0x9,
+		LandingToMe = 0x9,
+		MAX = 0xA,
 	};
 }
 
@@ -221,20 +226,21 @@ namespace EShooterPhysMaterialType
 {
 	enum Type
 	{
-		Unknown,
-		Concrete,
-		Dirt,
-		Water,
-		Metal,
-		Wood,
-		Grass,
-		Glass,
-		Flesh,
-		Leaves,
-		Rock,
-		Sand,
-		Snow,
-		MAX
+		Unknown = 0x0,
+		Concrete = 0x1,
+		Dirt = 0x2,
+		Water = 0x3,
+		Metal = 0x4,
+		Wood = 0x5,
+		Grass = 0x6,
+		Glass = 0x7,
+		Flesh = 0x8,
+		Leaves = 0x9,
+		Rock = 0xA,
+		Sand = 0xB,
+		Snow = 0xC,
+		Corruption = 0xD,
+		MAX = 0xE,
 	};
 }
 
@@ -242,11 +248,11 @@ namespace EWeaponState
 {
 	enum Type
 	{
-		Idle,
-		Firing,
-		Reloading,
-		Equipping,
-		UnEquipping
+		Idle = 0x0,
+		Firing = 0x1,
+		Reloading = 0x2,
+		Equipping = 0x3,
+		UnEquipping = 0x4,
 	};
 }
 
@@ -254,9 +260,9 @@ namespace EPathFollowingRequestResult
 {
 	enum Type
 	{
-		Failed,
-		AlreadyAtGoal,
-		RequestSuccessful
+		Failed = 0x0,
+		AlreadyAtGoal = 0x1,
+		RequestSuccessful = 0x2,
 	};
 }
 
@@ -264,12 +270,12 @@ namespace EPathFollowingResult
 {
 	enum Type
 	{
-		Success,
-		Blocked,
-		OffPath,
-		Aborted,
-		Skipped,
-		Invalid
+		Success = 0x0,
+		Blocked = 0x1,
+		OffPath = 0x2,
+		Aborted = 0x3,
+		Skipped = 0x4,
+		Invalid = 0x5,
 	};
 }
 
@@ -339,7 +345,8 @@ namespace EEngramGroup
 		ARK_TEK = 0x8,
 		ARK_UNLEARNED = 0x10,
 		ARK_ABERRATION = 0x20,
-		MAX = 0x21,
+		ARK_EXTINCTION = 0x40,
+		MAX = 0x41,
 	};
 }
 
@@ -355,5 +362,50 @@ namespace EPrimalStatsValueTypes
 		HitsPlayerBody = 0x5,
 		HitsPlayerCritical = 0x6,
 		MAX = 0x7,
+	};
+}
+
+namespace EChatSendMode
+{
+	enum Type
+	{
+		GlobalChat = 0x0,
+		GlobalTribeChat = 0x1,
+		LocalChat = 0x2,
+		AllianceChat = 0x3,
+		MAX = 0x4,
+	};
+}
+
+namespace EChatType
+{
+	enum Type
+	{
+		GlobalChat = 0x0,
+		ProximityChat = 0x1,
+		RadioChat = 0x2,
+		GlobalTribeChat = 0x3,
+		AllianceChat = 0x4,
+		MAX = 0x5,
+	};
+}
+
+namespace EMassTeleportState
+{
+	enum Type
+	{
+		INITIATED = 0x0,
+		TRIGGERED_SUCCESS = 0x1,
+		TRIGGERED_FAILED = 0x2,
+		COMPLETED = 0x3,
+		CANCELLED = 0x4,
+	};
+}
+
+namespace ECameraStyle
+{
+	enum Type
+	{
+		
 	};
 }

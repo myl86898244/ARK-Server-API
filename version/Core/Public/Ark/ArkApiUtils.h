@@ -41,9 +41,11 @@ namespace ArkApi
 		void SendServerMessage(AShooterPlayerController* player_controller, FLinearColor msg_color, const T* msg,
 		                       Args&&... args)
 		{
-			FString text(FString::Format(msg, std::forward<Args>(args)...));
-
-			player_controller->ClientServerChatDirectMessage(&text, msg_color, false);
+			if (player_controller)
+			{
+				FString text(FString::Format(msg, std::forward<Args>(args)...));
+				player_controller->ClientServerChatDirectMessage(&text, msg_color, false);
+			}
 		}
 
 		/**
@@ -62,10 +64,13 @@ namespace ArkApi
 		void SendNotification(AShooterPlayerController* player_controller, FLinearColor color, float display_scale,
 		                      float display_time, UTexture2D* icon, const T* msg, Args&&... args)
 		{
-			FString text(FString::Format(msg, std::forward<Args>(args)...));
+			if (player_controller)
+			{
+				FString text(FString::Format(msg, std::forward<Args>(args)...));
 
-			player_controller->ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon,
-			                                                      nullptr);
+				player_controller->ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon,
+				                                                      nullptr);
+			}
 		}
 
 		/**
@@ -81,13 +86,16 @@ namespace ArkApi
 		void SendChatMessage(AShooterPlayerController* player_controller, const FString& sender_name, const T* msg,
 		                     Args&&... args)
 		{
-			const FString text(FString::Format(msg, std::forward<Args>(args)...));
+			if (player_controller)
+			{
+				const FString text(FString::Format(msg, std::forward<Args>(args)...));
 
-			FChatMessage chat_message = FChatMessage();
-			chat_message.SenderName = sender_name;
-			chat_message.Message = text;
+				FChatMessage chat_message = FChatMessage();
+				chat_message.SenderName = sender_name;
+				chat_message.Message = text;
 
-			player_controller->ClientChatMessage(chat_message);
+				player_controller->ClientChatMessage(chat_message);
+			}
 		}
 
 		/**
@@ -108,8 +116,10 @@ namespace ArkApi
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 			{
 				AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
-
-				shooter_pc->ClientServerChatDirectMessage(&text, msg_color, false);
+				if (shooter_pc)
+				{
+					shooter_pc->ClientServerChatDirectMessage(&text, msg_color, false);
+				}
 			}
 		}
 
@@ -134,9 +144,11 @@ namespace ArkApi
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 			{
 				AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
-
-				shooter_pc->
-					ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon, nullptr);
+				if (shooter_pc)
+				{
+					shooter_pc->
+						ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon, nullptr);
+				}
 			}
 		}
 
@@ -161,8 +173,10 @@ namespace ArkApi
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 			{
 				AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
-
-				shooter_pc->ClientChatMessage(chat_message);
+				if (shooter_pc)
+				{
+					shooter_pc->ClientChatMessage(chat_message);
+				}
 			}
 		}
 
@@ -319,27 +333,61 @@ namespace ArkApi
 			return result;
 		}
 
-		/*bool SpawnDrop(const wchar_t* blueprint, FVector pos, int amount, float item_quality = 0.0f,
-					   bool force_blueprint = false, float life_span = 0.0f) const
+		/**
+		 * \brief Spawns an item drop
+		 * \param blueprint Item simplified BP
+		 * Example: '/Game/PrimalEarth/CoreBlueprints/Items/Armor/Riot/PrimalItemArmor_RiotPants.PrimalItemArmor_RiotPants_C'
+		 * \param pos Spawn position
+		 * \param amount Quantity
+		 * \param item_quality Quality
+		 * \param force_blueprint Is blueprint
+		 * \param life_span Life span
+		 * \return Returns true if drop was spawned, false otherwise
+		 */
+		bool SpawnDrop(const wchar_t* blueprint, FVector pos, int amount, float item_quality = 0.0f,
+		               bool force_blueprint = false, float life_span = 0.0f) const
 		{
-			UObject* object = Globals::StaticLoadObject(UObject::StaticClass(), nullptr, blueprint, nullptr, 0, 0, true);
-			TSubclassOf<UPrimalItem> archetype;// (reinterpret_cast<UClass*>(object));
+			APlayerController* player = GetWorld()->GetFirstPlayerController();
+			if (!player)
+			{
+				return false;
+			}
+
+			UObject* object = Globals::
+				StaticLoadObject(UObject::StaticClass(), nullptr, blueprint, nullptr, 0, 0, true);
+			if (!object)
+			{
+				return false;
+			}
+
+			TSubclassOf<UPrimalItem> archetype;
 			archetype.uClass = reinterpret_cast<UClass*>(object);
+
+			UPrimalItem* item = UPrimalItem::AddNewItem(archetype, nullptr, false, false, item_quality, false, amount,
+			                                            force_blueprint, 0, false, nullptr, 0);
+			if (!item)
+			{
+				return false;
+			}
+
+			FItemNetInfo* info = static_cast<FItemNetInfo*>(FMemory::Malloc(0x400));
+			RtlSecureZeroMemory(info, 0x400);
+
+			item->GetItemNetInfo(info, false);
+
 			TSubclassOf<ADroppedItem> archetype_dropped;
 			archetype_dropped.uClass = reinterpret_cast<UClass*>(object);
-			APlayerController* player = GetWorld()->GetFirstPlayerController();
-			if (player)
-			{
-				FVector pos2{1, 1, 1};
-				FRotator rot{0, 0, 0};
-				UPrimalInventoryComponent::StaticDropNewItem(player, archetype, item_quality, false, amount, force_blueprint,
-															 archetype_dropped, &rot,
-															 true, &pos2, &rot, true, false, false, true, nullptr, pos2,
-					nullptr, life_span);
-				return true;
-			}
-			return false;
-		}*/
+
+			FVector zero_vector{0, 0, 0};
+			FRotator rot{0, 0, 0};
+
+			UPrimalInventoryComponent::StaticDropItem(player, info, archetype_dropped, &rot, true, &pos, &rot, true,
+			                                          false, false, true, nullptr, &zero_vector, nullptr, life_span);
+
+			FMemory::Free(info);
+
+			return true;
+		}
 
 		/**
 		 * \brief Spawns a dino near player or at specific coordinates
@@ -387,7 +435,7 @@ namespace ArkApi
 
 					state->SetTribeTamingDinoSettings(dino);
 
-					dino->TameDino(player, true, 0, true, true);
+					dino->TameDino(player, true, 0, true, true, false);
 				}
 
 				if (neutered)

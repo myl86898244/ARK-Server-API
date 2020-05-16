@@ -41,9 +41,11 @@ namespace ArkApi
 		void SendServerMessage(AShooterPlayerController* player_controller, FLinearColor msg_color, const T* msg,
 		                       Args&&... args)
 		{
-			FString text(FString::Format(msg, std::forward<Args>(args)...));
-
-			player_controller->ClientServerChatDirectMessage(&text, msg_color, false);
+			if (player_controller)
+			{
+				FString text(FString::Format(msg, std::forward<Args>(args)...));
+				player_controller->ClientServerChatDirectMessage(&text, msg_color, false);
+			}
 		}
 
 		/**
@@ -62,10 +64,13 @@ namespace ArkApi
 		void SendNotification(AShooterPlayerController* player_controller, FLinearColor color, float display_scale,
 		                      float display_time, UTexture2D* icon, const T* msg, Args&&... args)
 		{
-			FString text(FString::Format(msg, std::forward<Args>(args)...));
+			if (player_controller)
+			{
+				FString text(FString::Format(msg, std::forward<Args>(args)...));
 
-			player_controller->ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon,
-			                                                      nullptr);
+				player_controller->ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon,
+				                                                      nullptr);
+			}
 		}
 
 		/**
@@ -81,13 +86,16 @@ namespace ArkApi
 		void SendChatMessage(AShooterPlayerController* player_controller, const FString& sender_name, const T* msg,
 		                     Args&&... args)
 		{
-			const FString text(FString::Format(msg, std::forward<Args>(args)...));
+			if (player_controller)
+			{
+				const FString text(FString::Format(msg, std::forward<Args>(args)...));
 
-			FChatMessage chat_message = FChatMessage();
-			chat_message.SenderName = sender_name;
-			chat_message.Message = text;
+				FChatMessage chat_message = FChatMessage();
+				chat_message.SenderName = sender_name;
+				chat_message.Message = text;
 
-			player_controller->ClientChatMessage(chat_message);
+				player_controller->ClientChatMessage(chat_message);
+			}
 		}
 
 		/**
@@ -108,8 +116,10 @@ namespace ArkApi
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 			{
 				AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
-
-				shooter_pc->ClientServerChatDirectMessage(&text, msg_color, false);
+				if (shooter_pc)
+				{
+					shooter_pc->ClientServerChatDirectMessage(&text, msg_color, false);
+				}
 			}
 		}
 
@@ -134,9 +144,11 @@ namespace ArkApi
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 			{
 				AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
-
-				shooter_pc->
-					ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon, nullptr);
+				if (shooter_pc)
+				{
+					shooter_pc->
+						ClientServerSOTFNotificationCustom(&text, color, display_scale, display_time, icon, nullptr);
+				}
 			}
 		}
 
@@ -161,8 +173,10 @@ namespace ArkApi
 			for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 			{
 				AShooterPlayerController* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
-
-				shooter_pc->ClientChatMessage(chat_message);
+				if (shooter_pc)
+				{
+					shooter_pc->ClientChatMessage(chat_message);
+				}
 			}
 		}
 
@@ -178,9 +192,19 @@ namespace ArkApi
 				APlayerState* player_state = controller->PlayerStateField();
 				if (player_state != nullptr)
 				{
-					auto* steam_net_id = static_cast<FUniqueNetIdSteam*>(player_state->UniqueIdField()
-					                                                                 .UniqueNetId.Get());
-					steam_id = steam_net_id->UniqueNetId;
+					auto* steam_net_id = static_cast<FUniqueNetIdString*>(player_state->UniqueIdField()
+					                                                                  .UniqueNetId.Get());
+
+					const FString steam_id_str = steam_net_id->UniqueNetIdStr;
+
+					try
+					{
+						steam_id = std::stoull(*steam_id_str);
+					}
+					catch (const std::exception&)
+					{
+						return 0;
+					}
 				}
 			}
 
@@ -446,8 +470,10 @@ namespace ArkApi
 		*/
 		static FVector GetPosition(APlayerController* player_controller)
 		{
-			FVector WorldPos{ 0, 0, 0 };
-			if (player_controller->RootComponentField()) player_controller->RootComponentField()->GetWorldLocation(&WorldPos);
+			FVector WorldPos{0, 0, 0};
+			if (player_controller->RootComponentField())
+				player_controller
+					->RootComponentField()->GetWorldLocation(&WorldPos);
 			return WorldPos;
 		}
 
@@ -611,16 +637,11 @@ namespace ArkApi
 				for (TWeakObjectPtr<APlayerController> player_controller : player_controllers)
 				{
 					auto* shooter_pc = static_cast<AShooterPlayerController*>(player_controller.Get());
+
 					if (shooter_pc != nullptr && shooter_pc->LinkedPlayerIDField() == player_id)
 					{
-						APlayerState* player_state = shooter_pc->PlayerStateField();
-						if (player_state != nullptr)
-						{
-							auto* steam_net_id = static_cast<FUniqueNetIdSteam*>(player_state
-							                                                     ->UniqueIdField().UniqueNetId.Get());
-							steam_id = steam_net_id->UniqueNetId;
-							break;
-						}
+						steam_id = GetSteamIdFromController(shooter_pc);
+						break;
 					}
 				}
 
